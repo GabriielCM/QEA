@@ -1,0 +1,324 @@
+﻿{% extends "base.html" %}
+{% block content %}
+<div class="container-fluid">
+    <!-- Linha de Resumo -->
+    <div class="row mb-4">
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-primary shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-primary text-uppercase mb-1">
+                                INCs Abertas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_incs_abertas }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-list fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-success shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-success text-uppercase mb-1">
+                                INCs Concluídas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_incs_concluidas }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-check-circle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-warning shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-warning text-uppercase mb-1">
+                                INCs Vencidas</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_incs_vencidas }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-exclamation-triangle fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+        <div class="col-xl-3 col-md-6 mb-4">
+            <div class="card border-left-info shadow h-100 py-2">
+                <div class="card-body">
+                    <div class="row no-gutters align-items-center">
+                        <div class="col mr-2">
+                            <div class="text-xs font-weight-bold text-info text-uppercase mb-1">
+                                Itens Inspecionados</div>
+                            <div class="h5 mb-0 font-weight-bold text-gray-800">{{ total_inspecionados }}</div>
+                        </div>
+                        <div class="col-auto">
+                            <i class="fas fa-clipboard-check fa-2x text-gray-300"></i>
+                        </div>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- Gráfico de INCs por Mês -->
+        <div class="col-xl-8 col-lg-7">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-bar me-1"></i> INCs por Mês
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px; width:100%">
+                        <canvas id="incsByMonthChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Distribuição por Urgência -->
+        <div class="col-xl-4 col-lg-5">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-chart-pie me-1"></i> Distribuição por Urgência
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="chart-container" style="position: relative; height:300px; width:100%">
+                        <canvas id="urgencyChart"></canvas>
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <div class="row">
+        <!-- INCs Recentes -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3 d-flex flex-row align-items-center justify-content-between">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-clipboard-list me-1"></i> INCs Recentes
+                    </h6>
+                    <a href="{{ url_for('visualizar_incs') }}" class="btn btn-sm btn-primary">
+                        Ver Todas
+                    </a>
+                </div>
+                <div class="card-body">
+                    <div class="table-responsive">
+                        <table class="table table-hover">
+                            <thead>
+                                <tr>
+                                    <th>OC</th>
+                                    <th>Data</th>
+                                    <th>Item</th>
+                                    <th>Status</th>
+                                    <th>Urgência</th>
+                                </tr>
+                            </thead>
+                            <tbody>
+                                {% for inc in incs_recentes %}
+                                <tr>
+                                    <td>{{ inc.oc }}</td>
+                                    <td>{{ inc.data }}</td>
+                                    <td>{{ inc.item }}</td>
+                                    <td>
+                                        <span class="badge {% if inc.status == 'Em andamento' %}bg-primary{% elif inc.status == 'Concluída' %}bg-success{% else %}bg-danger{% endif %}">
+                                            {{ inc.status }}
+                                        </span>
+                                    </td>
+                                    <td>
+                                        <span class="badge {% if inc.urgencia == 'Crítico' %}bg-danger{% elif inc.urgencia == 'Moderada' %}bg-warning{% else %}bg-success{% endif %}">
+                                            {{ inc.urgencia }}
+                                        </span>
+                                    </td>
+                                </tr>
+                                {% endfor %}
+                            </tbody>
+                        </table>
+                    </div>
+                </div>
+            </div>
+        </div>
+
+        <!-- Acesso Rápido -->
+        <div class="col-lg-6">
+            <div class="card shadow mb-4">
+                <div class="card-header py-3">
+                    <h6 class="m-0 font-weight-bold text-primary">
+                        <i class="fas fa-th-large me-1"></i> Acesso Rápido
+                    </h6>
+                </div>
+                <div class="card-body">
+                    <div class="row">
+                        <div class="col-lg-6 mb-3">
+                            <a href="{{ url_for('cadastro_inc') }}" class="card bg-primary text-white shadow text-decoration-none">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-plus-circle fa-3x mb-3"></i>
+                                    <h5>Cadastrar INC</h5>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <a href="{{ url_for('visualizar_incs') }}" class="card bg-info text-white shadow text-decoration-none">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-list fa-3x mb-3"></i>
+                                    <h5>Visualizar INCs</h5>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <a href="{{ url_for('rotina_inspecao') }}" class="card bg-success text-white shadow text-decoration-none">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-clipboard-check fa-3x mb-3"></i>
+                                    <h5>Rotina de Inspeção</h5>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <a href="{{ url_for('monitorar_fornecedores') }}" class="card bg-warning text-white shadow text-decoration-none">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-chart-line fa-3x mb-3"></i>
+                                    <h5>Monitorar Fornecedores</h5>
+                                </div>
+                            </a>
+                        </div>
+                        {% if current_user.is_admin %}
+                        <div class="col-lg-6 mb-3">
+                            <a href="{{ url_for('gerenciar_logins') }}" class="card bg-secondary text-white shadow text-decoration-none">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-users-cog fa-3x mb-3"></i>
+                                    <h5>Gerenciar Logins</h5>
+                                </div>
+                            </a>
+                        </div>
+                        <div class="col-lg-6 mb-3">
+                            <a href="{{ url_for('editar_layout') }}" class="card bg-dark text-white shadow text-decoration-none">
+                                <div class="card-body text-center">
+                                    <i class="fas fa-palette fa-3x mb-3"></i>
+                                    <h5>Editar Layout</h5>
+                                </div>
+                            </a>
+                        </div>
+                        {% endif %}
+                    </div>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
+{% endblock %}
+
+{% block scripts %}
+<script src="https://cdn.jsdelivr.net/npm/chart.js"></script>
+<script>
+document.addEventListener('DOMContentLoaded', function() {
+    // Gráfico de INCs por mês
+    const monthlyData = {{ monthly_data|tojson }};
+    const ctx1 = document.getElementById('incsByMonthChart').getContext('2d');
+    new Chart(ctx1, {
+        type: 'bar',
+        data: {
+            labels: monthlyData.map(d => d.month),
+            datasets: [{
+                label: 'Quantidade de INCs',
+                data: monthlyData.map(d => d.total),
+                backgroundColor: 'rgba(52, 152, 219, 0.7)',
+                borderColor: 'rgba(52, 152, 219, 1)',
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            scales: {
+                y: {
+                    beginAtZero: true,
+                    ticks: {
+                        precision: 0
+                    }
+                }
+            }
+        }
+    });
+    
+    // Gráfico de distribuição por urgência
+    const urgencyData = {{ urgency_data|tojson }};
+    const ctx2 = document.getElementById('urgencyChart').getContext('2d');
+    new Chart(ctx2, {
+        type: 'doughnut',
+        data: {
+            labels: urgencyData.map(d => d.label),
+            datasets: [{
+                data: urgencyData.map(d => d.value),
+                backgroundColor: [
+                    'rgba(231, 76, 60, 0.7)',  // Crítico
+                    'rgba(243, 156, 18, 0.7)', // Moderada
+                    'rgba(46, 204, 113, 0.7)'  // Leve
+                ],
+                borderColor: [
+                    'rgba(231, 76, 60, 1)',
+                    'rgba(243, 156, 18, 1)',
+                    'rgba(46, 204, 113, 1)'
+                ],
+                borderWidth: 1
+            }]
+        },
+        options: {
+            responsive: true,
+            maintainAspectRatio: false,
+            plugins: {
+                legend: {
+                    position: 'bottom'
+                }
+            }
+        }
+    });
+    
+    // Efeito de hover nos cards de acesso rápido
+    const accessCards = document.querySelectorAll('.card.shadow');
+    accessCards.forEach(card => {
+        card.addEventListener('mouseenter', function() {
+            this.style.transform = 'translateY(-5px)';
+            this.style.transition = 'transform 0.3s ease';
+            this.style.boxShadow = '0 10px 20px rgba(0,0,0,0.2)';
+        });
+        card.addEventListener('mouseleave', function() {
+            this.style.transform = 'translateY(0)';
+            this.style.boxShadow = '';
+        });
+    });
+    
+    // Detectar tema escuro e ajustar gráficos
+    function updateChartsTheme(isDarkMode) {
+        Chart.defaults.color = isDarkMode ? '#ecf0f1' : '#666';
+        Chart.defaults.borderColor = isDarkMode ? 'rgba(255, 255, 255, 0.1)' : 'rgba(0, 0, 0, 0.1)';
+        
+        Chart.instances.forEach(chart => {
+            chart.update();
+        });
+    }
+    
+    // Verificar se o modo escuro está ativo
+    if (document.body.classList.contains('night-mode')) {
+        updateChartsTheme(true);
+    }
+    
+    // Ouvir alterações de tema
+    document.addEventListener('themeChanged', function(event) {
+        updateChartsTheme(event.detail.darkMode);
+    });
+});
+</script>
+{% endblock %}
